@@ -25,6 +25,7 @@ from src.api.openai_schemas import (
     ChatMessage,
     Choice,
     ChoiceMessage,
+    AudioInfo,
     FunctionCallInfo,
     ImageData,
     ImageGenerationRequest,
@@ -737,6 +738,7 @@ async def create_chat_completion(
                 prompt,
                 image_paths=image_paths or None,
                 file_paths=file_paths or None,
+                read_aloud=bool(request.read_aloud),
             )
         except Exception as e:
             log.error(f"Provider error: {e}", exc_info=True)
@@ -794,6 +796,16 @@ async def create_chat_completion(
                         role="assistant",
                         content=response_text,
                         tool_calls=tool_calls,
+                        audio=(
+                            AudioInfo(
+                                url=result.audio.url,
+                                local_path=result.audio.local_path,
+                                mime_type=result.audio.mime_type,
+                                size_bytes=result.audio.size_bytes,
+                            )
+                            if result.audio
+                            else None
+                        ),
                     ),
                     finish_reason=finish_reason,
                 )
